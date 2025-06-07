@@ -92,6 +92,13 @@ export const auth =  () => {
     }
 }
 
-
   
-  
+export const fetchUserFilial = async (userId) => {
+    try {
+        const response = await axios.get(`${config.apiUrl}/api/auth/user-filial/${userId}`);
+        return response.data.filial;
+    } catch (error) {
+        console.error('Ошибка при получении филиала:', error);
+        return null;
+    }
+};

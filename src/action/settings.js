@@ -10,7 +10,7 @@ export const updateSettings = async (
   chinaAddress,
   whatsappNumber,
   aboutUsText,
-  prohibitedItemsText, contractFile) => {
+  prohibitedItemsText, contractFile, userId) => {
       
     const formData = new FormData();
     
@@ -20,6 +20,7 @@ export const updateSettings = async (
     if (whatsappNumber) formData.append('whatsappNumber', whatsappNumber);
     if (aboutUsText) formData.append('aboutUsText', aboutUsText);
     if (prohibitedItemsText) formData.append('prohibitedItemsText', prohibitedItemsText);
+    if (userId) formData.append('userId', userId);
     
     // Добавляем файл контракта в FormData
     if (contractFile) {
@@ -47,11 +48,12 @@ export const updateSettings = async (
 };
 
 
-export const getSettings = async () => {
+export const getSettings = async (userId) => {
     try {
-      // Отправляем GET запрос на сервер для получения данных о всех филиалах
-      const response = await axios.get(`${configUrl}/api/settings/getSettings`);
-      
+     // Отправляем GET запрос на сервер для получения данных
+    const response = await axios.get(`${configUrl}/api/settings/getSettings`, {
+      params: { userId } // Передаем userId для проверки роли
+    });
       // Если запрос выполнен успешно, возвращаем данные ответа
       return response.data;
     } catch (error) {
@@ -60,6 +62,7 @@ export const getSettings = async () => {
       return null;
     }
   };
+
 
 
 // Функция для загрузки контракта
@@ -147,10 +150,10 @@ export const updateGlobalBonusPercentage = async (percent) => {
 
 
 
-export const updateContacts = async (phone, whatsappPhone, whatsappLink, instagram, telegramId, telegramLink) => {
+export const updateContacts = async (phone, whatsappPhone, whatsappLink, instagram, telegramId, telegramLink, userId) => {
   try {
     // Отправляем POST запрос на сервер для добавления нового филиала
-    const response = await axios.post(`${configUrl}/api/settings/updateContacts`, {phone, whatsappPhone, whatsappLink, instagram, telegramId, telegramLink});
+    const response = await axios.post(`${configUrl}/api/settings/updateContacts`, {phone, whatsappPhone, whatsappLink, instagram, telegramId, telegramLink,userId});
   
     // Если запрос выполнен успешно, возвращаем данные ответа
     return response.data;
@@ -174,11 +177,12 @@ export const updateContacts = async (phone, whatsappPhone, whatsappLink, instagr
   }
 };
 
-export const getContacts = async () => {
+export const getContacts = async (userId) => {
   try {
     // Отправляем GET запрос на сервер для получения данных о всех филиалах
-    const response = await axios.get(`${configUrl}/api/settings/getContacts`);
-    
+    const response = await axios.get(`${configUrl}/api/settings/getContacts`, {
+      params: { userId } // Передаем userId для проверки роли
+    });
     // Если запрос выполнен успешно, возвращаем данные ответа
     return response.data;
   } catch (error) {

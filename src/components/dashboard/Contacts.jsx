@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import './css/admin.css';
 import { updateContacts, getContacts } from '../../action/settings';
+import { useSelector } from "react-redux"; // Подключаем useSelector из react-redux
 
 const Contacts = () => {
     const [phone, setPhone] = useState('');
@@ -10,26 +11,28 @@ const Contacts = () => {
     const [telegramId, setTelegramId] = useState('');
     const [telegramLink, setTelegramLink] = useState('');
     const [contacts, setContacts] = useState([]);
-
+    const userId = useSelector(state => state.user.currentUser.id)
     
     useEffect(() => {
-        fetchContacts();
-    }, []);
 
-    const fetchContacts = async () => {
-        try {
-            const allContacts = await getContacts();
-            setContacts(allContacts || {});
-        } catch (error) {
-            console.error('Ошибка при получении данных о цене:', error);
-        }
-    };
+        const fetchContacts = async () => {
+            try {
+                const allContacts = await getContacts(userId);
+                setContacts(allContacts || {});
+            } catch (error) {
+                console.error('Ошибка при получении данных о цене:', error);
+            }
+        };
+        fetchContacts();
+
+    }, [userId]);
+
     
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
             if (phone !== '' || whatsappPhone !== '' || whatsappLink !== '' || instagram !== '' || telegramId !== '' || telegramLink !== '') {
-                await updateContacts(phone, whatsappPhone, whatsappLink, instagram, telegramId, telegramLink);
+                await updateContacts(phone, whatsappPhone, whatsappLink, instagram, telegramId, telegramLink, userId);
                 alert('Данные успешно сохранены');
                 setPhone('');
                 setWhatsappPhone('');

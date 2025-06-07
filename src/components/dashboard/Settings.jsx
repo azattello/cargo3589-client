@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import './css/admin.css';
 import { getSettings, updateSettings } from '../../action/settings';
 import config from "../../config";
+import { useSelector } from "react-redux"; // Подключаем useSelector из react-redux
 
 const Settings = () => {
     const [videoLink, setVideoLink] = useState('');
@@ -12,22 +13,25 @@ const Settings = () => {
     const [contractFile, setContractFile] = useState(null);
     const [contractFilePath, setContractFilePath] = useState('');
     const [settingList, setSettingList] = useState({});
+    const userId = useSelector(state => state.user.currentUser.id)
+    const role = localStorage.getItem('role')
 
     // Получаем настройки при загрузке компонента
     useEffect(() => {
+         // Получение настроек с сервера
+        const fetchSettings = async () => {
+            try {
+                const allSettings = await getSettings(userId);
+                setSettingList(allSettings || {});
+                setContractFilePath(allSettings.contractFilePath || '');
+            } catch (error) {
+                console.error('Ошибка при получении настроек:', error);
+            }
+        };
         fetchSettings();
-    }, []);
+    }, [userId]);
 
-    // Получение настроек с сервера
-    const fetchSettings = async () => {
-        try {
-            const allSettings = await getSettings();
-            setSettingList(allSettings || {});
-            setContractFilePath(allSettings.contractFilePath || '');
-        } catch (error) {
-            console.error('Ошибка при получении настроек:', error);
-        }
-    };
+   
 
     useEffect(() => {
         console.log(settingList); // Логируем настройки при изменении
@@ -45,7 +49,7 @@ const Settings = () => {
         try {
             // Обновляем текстовые настройки
             if (videoLink !== '' || chinaAddress !== '' || whatsappNumber !== '' || aboutUsText !== '' || prohibitedItemsText !== '' || contractFile !== '') {
-                const response = await updateSettings(videoLink, chinaAddress, whatsappNumber, aboutUsText, prohibitedItemsText, contractFile);
+                const response = await updateSettings(videoLink, chinaAddress, whatsappNumber, aboutUsText, prohibitedItemsText, contractFile, userId);
                 alert('Данные успешно сохранены:', response);
 
                 // Очищаем поля ввода
@@ -56,7 +60,6 @@ const Settings = () => {
                 setProhibitedItemsText('');
                 setContractFile('');
 
-                fetchSettings(); // Обновляем список настроек
             } else {
                 alert('Все поля пустые');
             }
@@ -144,27 +147,32 @@ const Settings = () => {
                     </p>
                 </div>
 
+               
+                {role !== 'filial' && 
                 <div className="inputs-wrapper">
-                    <p><b>Загрузить договор</b></p>
-                    <input type="file" onChange={handleFileChange} />
+                        <p><b>Загрузить договор</b></p>
+                        <input type="file" onChange={handleFileChange} />
 
-                    {contractFilePath && (
-                        <p>
-                            Текущий договор: 
-                            <a 
-                                href={`${config.apiUrl}${contractFilePath}`} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                            >
-                                Скачать файл
-                            </a>
-                        </p>
-                    )}
+                        {contractFilePath && (
+                            <p>
+                                Текущий договор: 
+                                <a 
+                                    href={`${config.apiUrl}${contractFilePath}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                >
+                                    Скачать файл
+                                </a>
+                            </p>
+                        )}
 
-                </div>
-                    
+                    </div>
+                        
+                }
+    
                    
 
+         
                 <button className="filialAdd-button" type="submit">Сохранить</button>
             </form>
         </div>

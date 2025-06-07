@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useSelector } from "react-redux"; // Подключаем useSelector из react-redux
 import './styles/main.css';
-import { getSettings, getContacts } from '../action/settings';
+import { getContacts } from '../action/settings';
+import {fetchUserFilial} from '../action/user';
 import { getFilials } from '../action/filial';
 // import filials from '../assets/icons/filials.svg';
 import filial from '../assets/icons/filials.svg'
@@ -58,6 +60,7 @@ const Main = () => {
   
     const [copySuccess, setCopySuccess] = useState("");
 
+    const userId = useSelector(state => state.user.currentUser.id)
 
     const changeLanguage = (lng) => {
       i18n.changeLanguage(lng);
@@ -67,10 +70,17 @@ const Main = () => {
     const toggleAboutUs = () => setIsAboutUsOpen(!isAboutUsOpen);
     const toggleProhibitedItems = () => setIsProhibitedItemsOpen(!isProhibitedItemsOpen);
 
-    const fetchSettings = async () => {
-        const allSettings = await getSettings();
-        setSettings(allSettings || {}); 
-    };
+    // Функция для получения данных о филиалах при загрузке компонента
+     useEffect(() => {
+        const fetchFilialData = async () => {
+            const filial = await fetchUserFilial(userId);
+            setSettings(filial);
+        };
+    
+        // fetchFilials();
+        fetchFilialData();
+
+    }, [userId]); // Добавляем зависимости
     
     const handleCopy = () => {
         const addressElement = document.querySelector(".chinaAddress");
@@ -91,25 +101,19 @@ const Main = () => {
 
      // Функция для получения данных о филиалах при загрузке компонента
      useEffect(() => {
-
-      
+        const fetchFilials = async () => {
+            // Вызываем функцию getFilials для получения данных о всех филиалах
+            const allFilials = await getFilials();
+            const allContacts = await getContacts(userId);
+            setFilials(allFilials); // Обновляем список филиалов
+            setContacts(allContacts);
+        };
         fetchFilials(); // Вызываем функцию получения данных о филиалах при загрузке компонента
-      }, []);
-
-
-      const fetchFilials = async () => {
-        // Вызываем функцию getFilials для получения данных о всех филиалах
-        const allFilials = await getFilials();
-        const allContacts = await getContacts();
-        setFilials(allFilials); // Обновляем список филиалов
-        setContacts(allContacts);
-      };
-
+    }, [userId,contacts]);
 
       
 
     useEffect(() => {
-        fetchSettings();
         
 
         const fetchUserProfile = async () => {
@@ -230,7 +234,7 @@ const Main = () => {
             <div className="section">
 
                 <div className="blocks__info">
-                    <a href={settings.videoLink || '#'} target="_blank" rel="noreferrer" className="block_info">
+                    <a href={settings?.videoLink || '#'} target="_blank" rel="noreferrer" className="block_info">
                         <h3 className="text__block_info">{t('menu.instruction')}</h3>
                         <img className="iconMain" src={guide} alt="" />
                     </a>
@@ -245,7 +249,7 @@ const Main = () => {
                         <img className="iconMain" src={geo} alt="" />
                     </div>
 
-                    <a href={settings.whatsappNumber || '#'} target="_blank" rel="noreferrer" className="block_info">
+                    <a href={settings?.whatsappNumber || '#'} target="_blank" rel="noreferrer" className="block_info">
                         <h3 className="text__block_info">WhatsApp</h3>
                         <img className="iconMain" src={whatsapp} alt="" />
                     </a>
@@ -270,7 +274,7 @@ const Main = () => {
                         <h3>{t('menu.warehouseAddress')}</h3>
                         {
                             <>
-                            {showAdress && <p className='chinaAddress'>{settings.chinaAddress}</p>}
+                            {showAdress && <p className='chinaAddress'>{settings?.chinaAddress}</p>}
                             <button onClick={handleCopy} className="copyButton">{t('menu.copy')}</button>
                             {copySuccess && <span className="copyMessage">{copySuccess}</span>}
                             </>
@@ -301,7 +305,7 @@ const Main = () => {
                         <h3>{t('menu.aboutUs')}</h3>
                         <span className={`arrow ${isAboutUsOpen ? "open" : ""}`}>▼</span>
                         </div>
-                        {isAboutUsOpen && <p>{settings.aboutUsText}</p>}
+                        {isAboutUsOpen && <p>{settings?.aboutUsText}</p>}
                     </div>
 
                     <div className="about" onClick={toggleProhibitedItems}>
@@ -309,7 +313,7 @@ const Main = () => {
                         <h3>{t('menu.prohibitedItems')}</h3>
                         <span className={`arrow ${isProhibitedItemsOpen ? "open" : ""}`}>▼</span>
                         </div>
-                        {isProhibitedItemsOpen && <p>{settings.prohibitedItemsText}</p>}
+                        {isProhibitedItemsOpen && <p>{settings?.prohibitedItemsText}</p>}
                     </div>
 
                     
@@ -317,20 +321,20 @@ const Main = () => {
                         <h3>{t('menu.contacts')}</h3>
                         <div className="contacts__el_main">
                             <img src={phoneIcon} alt="" />
-                            <a target="_blank" rel="noreferrer" href={`tel:${contacts.phone}`}>{contacts.phone ? `${contacts.phone}` : ''}</a>
+                            <a target="_blank" rel="noreferrer" href={`tel:${contacts.filial?.phone}`}>{contacts.filial?.phone ? `${contacts.filial?.phone}` : ''}</a>
                         </div>
                         <div className="contacts__el_main">
                             <img src={whatsappIcon} alt="" />
-                            <a target="_blank" rel="noreferrer" href={contacts.whatsappLink}>{contacts.whatsappPhone ? `${contacts.whatsappPhone}` : ''}</a>
+                            <a target="_blank" rel="noreferrer" href={contacts.filial?.whatsappLink}>{contacts.filial?.whatsappPhone ? `${contacts.filial?.whatsappPhone}` : ''}</a>
                         </div>
                         <div className="contacts__el_main">
                             <img src={instagramIcon} alt="" />
-                            <a target="_blank" rel="noreferrer" href={`https://www.instagram.com/${contacts.instagram}`}>{contacts.instagram ? `${contacts.instagram}` : ''}</a>
+                            <a target="_blank" rel="noreferrer" href={`https://www.instagram.com/${contacts.filial?.instagram}`}>{contacts.filial?.instagram ? `${contacts.filial?.instagram}` : ''}</a>
 
                         </div>
                         <div className="contacts__el_main">
                             <img src={telegramIcon} alt="" />
-                            <a target="_blank" rel="noreferrer" href={contacts.telegramLink}>{contacts.telegramId ? `${contacts.telegramId}` : ''}</a>
+                            <a target="_blank" rel="noreferrer" href={contacts?.telegramLink}>{contacts.filial?.telegramId ? `${contacts.filial?.telegramId}` : ''}</a>
 
                         </div>
                     </div>

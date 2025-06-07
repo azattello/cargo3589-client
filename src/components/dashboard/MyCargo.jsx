@@ -8,6 +8,8 @@ import Banners from "./Banners"
 import Contacts from "./Contacts";
 const MyCargo = () => {
 
+    const role = localStorage.getItem('role')
+
     return (
       
         <div className="my-cargo mainAdmin">
@@ -19,13 +21,18 @@ const MyCargo = () => {
                 </div>
             </div>
             <div className="section-my-cargo">
+          {role !== 'filial' && 
                 <Banners/>
+          }
 
             </div>
             <div className="section-my-cargo">
-                <StatusList/>
-                <FilialList/>
-
+                {role !== 'filial' && 
+                    <>
+                        <StatusList/>
+                        <FilialList/>
+                    </>
+                }
             </div>
 
 

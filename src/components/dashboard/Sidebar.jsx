@@ -16,7 +16,6 @@ import { useSelector } from "react-redux";
 const Sidebar = ({ onNavItemClick }) => {
     const [selectedNavItem, setSelectedNavItem] = useState(sessionStorage.getItem('selectedNavItem') || "addTrack");
     
-    const role = localStorage.getItem('role')
     const name = useSelector(state => state.user.currentUser.name);
     const surname = useSelector(state => state.user.currentUser.surname);
     const phone = useSelector(state => state.user.currentUser.phone);
@@ -79,14 +78,11 @@ const Sidebar = ({ onNavItemClick }) => {
             <div></div>
           </div>
   
-          
-          {role !== 'filial' && 
           <div className={`nav-link ${selectedNavItem === "myCargo" && "nav-active"}`} onClick={() => handleNavItemClick("myCargo")}>
             <img src={truck} alt="" className="nav-icon" />
             <h5 className="nav-title">Мой карго</h5>
             <div></div>
           </div>
-          }
          
         
          
